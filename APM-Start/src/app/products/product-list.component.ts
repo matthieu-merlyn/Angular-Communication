@@ -2,22 +2,22 @@ import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, ViewChildren }
 import { IProduct } from './product';
 import { ProductService } from './product.service';
 import { CriteriaComponent } from '../shared/criteria/criteria.component';
+import { ProductParameterService } from './product-parameter.service';
 
 @Component({
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.css']
 })
-export class ProductListComponent implements OnInit, AfterViewInit {
+export class ProductListComponent implements OnInit {
 
   pageTitle: string = 'Product List';
 
-  private _showImage: boolean;
   get showImage(): boolean {
-    return this._showImage;
+    return this.productParameterService.showImage;
   }
 
   set showImage(value: boolean) {
-    this._showImage = value;
+    this.productParameterService.showImage = value;
   }
 
   includeDetail: boolean = true;
@@ -32,24 +32,26 @@ export class ProductListComponent implements OnInit, AfterViewInit {
   @ViewChild(CriteriaComponent) filterComponent: CriteriaComponent;
   parentListFilter: string;
 
-  constructor(private productService: ProductService) { }
+  constructor(private productService: ProductService,
+              private productParameterService: ProductParameterService) { }
 
   ngOnInit(): void {
     this.productService.getProducts().subscribe(
       (products: IProduct[]) => {
         this.products = products;
-        this.performFilter(this.parentListFilter);
+        this.filterComponent.listFilter = this.productParameterService.filterBy;
+        // this.performFilter(this.productParameterService.filterBy);
       },
       (error: any) => this.errorMessage = <any>error
     );
   }
 
-  ngAfterViewInit(): void {
-    this.parentListFilter = this.filterComponent.listFilter;
-  }
+  // ngAfterViewInit(): void {
+  //   this.parentListFilter = this.filterComponent.listFilter;
+  // }
 
   toggleImage(): void {
-    this._showImage = !this._showImage;
+    this.productParameterService.showImage = !this.productParameterService.showImage;
   }
 
   performFilter(filterBy?: string): void {
@@ -62,6 +64,7 @@ export class ProductListComponent implements OnInit, AfterViewInit {
   }
 
   onValueChange(listFilter: string): void {
+    this.productParameterService.filterBy = listFilter;
     this.performFilter(listFilter);
   }
 }
