@@ -1,46 +1,67 @@
-import { Component, OnInit } from '@angular/core';
-
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, ViewChildren } from '@angular/core';
 import { IProduct } from './product';
 import { ProductService } from './product.service';
+import { CriteriaComponent } from '../shared/criteria/criteria.component';
 
 @Component({
-    templateUrl: './product-list.component.html',
-    styleUrls: ['./product-list.component.css']
+  templateUrl: './product-list.component.html',
+  styleUrls: ['./product-list.component.css']
 })
-export class ProductListComponent implements OnInit {
-    pageTitle: string = 'Product List';
-    listFilter: string;
-    showImage: boolean;
+export class ProductListComponent implements OnInit, AfterViewInit {
 
-    imageWidth: number = 50;
-    imageMargin: number = 2;
-    errorMessage: string;
+  pageTitle: string = 'Product List';
 
-    filteredProducts: IProduct[];
-    products: IProduct[];
+  private _showImage: boolean;
+  get showImage(): boolean {
+    return this._showImage;
+  }
 
-    constructor(private productService: ProductService) { }
+  set showImage(value: boolean) {
+    this._showImage = value;
+  }
 
-    ngOnInit(): void {
-        this.productService.getProducts().subscribe(
-            (products: IProduct[]) => {
-                this.products = products;
-                this.performFilter(this.listFilter);
-            },
-            (error: any) => this.errorMessage = <any>error
-        );
+  includeDetail: boolean = true;
+
+  imageWidth: number = 50;
+  imageMargin: number = 2;
+  errorMessage: string;
+
+  filteredProducts: IProduct[];
+  products: IProduct[];
+
+  @ViewChild(CriteriaComponent) filterComponent: CriteriaComponent;
+  parentListFilter: string;
+
+  constructor(private productService: ProductService) { }
+
+  ngOnInit(): void {
+    this.productService.getProducts().subscribe(
+      (products: IProduct[]) => {
+        this.products = products;
+        this.performFilter(this.parentListFilter);
+      },
+      (error: any) => this.errorMessage = <any>error
+    );
+  }
+
+  ngAfterViewInit(): void {
+    this.parentListFilter = this.filterComponent.listFilter;
+  }
+
+  toggleImage(): void {
+    this._showImage = !this._showImage;
+  }
+
+  performFilter(filterBy?: string): void {
+    if (filterBy) {
+      this.filteredProducts = this.products.filter((product: IProduct) =>
+        product.productName.toLocaleLowerCase().indexOf(filterBy.toLocaleLowerCase()) !== -1);
+    } else {
+      this.filteredProducts = this.products;
     }
+  }
 
-    toggleImage(): void {
-        this.showImage = !this.showImage;
-    }
-
-    performFilter(filterBy?: string): void {
-        if (filterBy) {
-            this.filteredProducts = this.products.filter((product: IProduct) =>
-                product.productName.toLocaleLowerCase().indexOf(filterBy.toLocaleLowerCase()) !== -1);
-        } else {
-            this.filteredProducts = this.products;
-        }
-    }
+  onValueChange(listFilter: string): void {
+    this.performFilter(listFilter);
+  }
 }
