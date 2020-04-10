@@ -1,17 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../product.service';
 import { IProduct } from '../product';
+import { timer } from 'rxjs/observable/timer';
 
 @Component({
-    selector: 'pm-product-shell-detail',
-    templateUrl: './product-shell-detail.component.html'
+  selector: 'pm-product-shell-detail',
+  templateUrl: './product-shell-detail.component.html'
 })
 export class ProductShellDetailComponent implements OnInit {
-    pageTitle: string = 'Product Detail';
+  get product(): IProduct {
+    return this.productService.currentProduct;
+  }
 
-    constructor(private productService: ProductService) { }
+  pageTitle: string = 'Product Detail';
 
-    ngOnInit() {
-    }
+  constructor(private productService: ProductService) {
+  }
+
+  ngOnInit() {
+
+  }
 
 }
